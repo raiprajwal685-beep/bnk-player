@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BNK Player</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--fg:#14161a;--mut:#6b7280;--bd:#e3e5ea;--ac:#4f7cff;--soft:#eef2ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--card:#171a21;--fg:#eceef2;--mut:#98a0ae;--bd:#262b35;--ac:#6b93ff;--soft:#222a3a}}
+:root[data-theme="dark"]{--bg:#0f1115;--card:#171a21;--fg:#eceef2;--mut:#98a0ae;--bd:#262b35;--ac:#6b93ff;--soft:#222a3a}
+*{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 56px);scroll-behavior:smooth}
+body{margin:0 auto;max-width:720px;padding:0 14px 90px;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:flex;gap:8px;padding:10px 0;background:var(--bg)}
+.nav a{padding:7px 14px;border-radius:999px;background:var(--soft);color:var(--fg);text-decoration:none;font-weight:600;font-size:14px;transition:transform .15s,background .2s}
+.nav a:active{transform:scale(.94)}
+h1{font-size:26px;margin:6px 0 2px;letter-spacing:-.02em}
+.sub{color:var(--mut);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:16px;margin-bottom:14px;animation:rise .5s cubic-bezier(.2,.8,.3,1) both}
+.card:nth-of-type(2){animation-delay:.05s}.card:nth-of-type(3){animation-delay:.1s}.card:nth-of-type(4){animation-delay:.15s}
+h2{display:flex;align-items:center;gap:10px;font-size:17px;margin:0 0 12px}
+h2 i{width:26px;height:26px;border-radius:9px;background:var(--ac);color:#fff;display:grid;place-items:center;font:700 13px system-ui;font-style:normal}
+small,.st{color:var(--mut)}
+.st{font-size:13px;margin-top:6px}
+input[type=file]{width:100%;font-size:13px;color:var(--mut)}
+input[type=file]::file-selector-button{border:1.5px dashed var(--ac);background:var(--soft);color:var(--fg);padding:10px 14px;border-radius:10px;margin-right:10px;font:inherit;font-weight:600;cursor:pointer;transition:transform .15s,background .2s}
+input[type=file]::file-selector-button:active{transform:scale(.96)}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;cursor:pointer;transition:transform .12s,filter .2s;touch-action:manipulation}
+button:hover{filter:brightness(1.08)}button:active{transform:scale(.95)}
+button.ghost{background:var(--soft);color:var(--fg)}
+.row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;padding:12px 0;border-top:1px solid var(--bd);animation:rise .35s cubic-bezier(.2,.8,.3,1) both}
+.info{min-width:0;flex:1 1 150px}.info b{display:block;overflow-wrap:anywhere}.info small{display:block;overflow-wrap:anywhere}
+.row.rep .info small{color:var(--ac)}
+.acts{display:flex;flex-wrap:wrap;gap:6px}.acts button{padding:7px 12px;font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#exp button{width:100%;margin-top:4px}
+audio{width:100%;margin:10px 0}
+canvas{max-width:100%;border-radius:12px}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+.toast{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translate(-50%,160%);max-width:min(92vw,520px);background:var(--fg);color:var(--bg);padding:11px 16px;border-radius:14px;font-size:14px;opacity:0;transition:transform .4s cubic-bezier(.2,.9,.3,1.25),opacity .25s;z-index:20;pointer-events:none;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.toast.show{transform:translate(-50%,0);opacity:1}
+.editor{border-top:3px solid var(--ac)}
+.trk{border:1px solid var(--bd);border-radius:14px;padding:12px;margin:12px 0;background:var(--bg);animation:pop .3s both}
+.th{display:flex;justify-content:space-between;align-items:center;gap:8px}.th b{overflow-wrap:anywhere}.th small{margin-left:8px}
+.th button{padding:5px 10px}
+.trk canvas{width:100%;height:56px;display:block;margin:8px 0;background:var(--card);border-radius:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}.f span{font-size:12px;color:var(--mut);display:flex;justify-content:space-between}
+.f input{width:100%;min-width:0;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
+.f input[type=range]{padding:0;height:34px;accent-color:var(--ac);border:0;background:none}
+.wvbox{position:relative;margin-top:14px}
+.wvbox canvas{width:100%;height:110px;display:block;background:var(--bg);border:1px solid var(--bd)}
+#ph{position:absolute;top:0;bottom:0;left:0;width:2px;background:var(--ac);opacity:0;box-shadow:0 0 10px var(--ac);transition:opacity .2s}
+.transport{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.transport #bp{flex:1 1 100%;padding:14px;font-size:16px}
+.transport .ghost{flex:1}
+.tobank{display:flex;gap:8px;flex-wrap:wrap}
+.tobank select{flex:1;min-width:0;padding:9px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit}
+#tl:empty::before{content:"No clips yet. Add .wem, .wav or .mp3 files, or tap Edit on a bank clip.";display:block;color:var(--mut);padding:16px;text-align:center;border:1.5px dashed var(--bd);border-radius:12px;margin:10px 0}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style></head><body>
+<nav class="nav"><a href="#bank">Bank</a><a href="#unity">Unity</a><a href="#editor">Editor</a></nav>
+<h1>BNK Player</h1><p class="sub">Play, edit and rebuild game audio and bundles.</p>
+<section class="card" id="codebook"><h2><i>1</i>Codebook</h2><input type="file" id="cbf"><div class="st" id="cbs">Pick packed_codebooks_aoTuV_603.bin (or packed_codebooks.bin). It is remembered in this browser.</div></section>
+<section class="card" id="bank"><h2><i>2</i>Wwise bank</h2><input type="file" id="bnk"><audio id="au" controls></audio><div id="exp"></div><div id="list"></div><input type="file" id="rf" hidden></section>
+<section class="card" id="unity"><h2><i>3</i>Unity bundle</h2><input type="file" id="ub"><div class="st" id="us"></div><div id="ul"></div><input type="file" id="pf" accept="image/*" hidden><canvas id="cv" width="8" height="8" style="max-width:100%;display:none;margin-top:8px"></canvas><canvas id="c3" style="display:none;width:100%;height:340px;margin-top:8px"></canvas></section>
+<section class="card editor" id="editor"><h2><i>4</i>Audio editor</h2>
+<input type="file" id="af" multiple accept="audio/*,.wem">
+<div id="tl"></div>
+<div class="wvbox"><canvas id="wv" width="900" height="110"></canvas><div id="ph"></div></div>
+<div class="st" id="as"></div>
+<div class="transport"><button id="bp">&#9654; Play</button><button id="bj" class="ghost">Join in order</button><button id="bo" class="ghost">Overlay all</button><button id="bs" class="ghost">Save .wav</button></div>
+<div class="tobank"><select id="tsel"></select><button id="bb">Put in bank</button></div></section>
+<div id="msg" class="toast"></div>
+<script>
+const $=i=>document.getElementById(i),say=t=>{const m=$('msg');m.textContent=t;m.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>m.classList.remove('show'),/^Error/.test(t)?7000:3500)};
+const ilog=v=>{let r=0;while(v){r++;v>>>=1}return r};
+class BR{constructor(b){this.b=b;this.p=0}
+read(n){let v=0;for(let i=0;i<n;i++){const y=this.b[this.p>>3];if(y===undefined)throw Error('Bad codebook data (wrong codebook file?)');v|=((y>>(this.p&7))&1)<<i;this.p++}return v>>>0}}
+class BW{constructor(){this.a=[];this.c=0;this.n=0}
+w(v,n){for(let i=0;i<n;i++){this.c|=((v>>>i)&1)<<this.n;if(++this.n==8){this.a.push(this.c);this.c=0;this.n=0}}}
+done(){if(this.n){this.a.push(this.c);this.c=0;this.n=0}return this.a}}
+let lib=null;
+function setLib(u8){const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength),t=dv.getUint32(u8.length-4,true),n=(u8.length-t)/4,off=[];
+for(let i=0;i<n;i++)off.push(dv.getUint32(t+i*4,true));lib={d:u8,off};$('cbs').textContent='Codebook loaded ('+(n-1)+' books).'}
+$('cbf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const u=new Uint8Array(await f.arrayBuffer());try{setLib(u);let s='';for(const x of u)s+=String.fromCharCode(x);localStorage.setItem('cb',btoa(s))}catch(x){}};
+try{const s=localStorage.getItem('cb');if(s)setLib(Uint8Array.from(atob(s),c=>c.charCodeAt(0)))}catch(x){}
+function qv(e,d){const b=ilog(e);let v=e>>>Math.floor((b-1)*(d-1)/d);for(;;){let a=1,c=1;for(let i=0;i<d;i++){a*=v;c*=v+1}if(a<=e&&c>e)return v;v+=a>e?-1:1}}
+function cbk(id,w){if(id+1>=lib.off.length)throw Error('Codebook id '+id+' not in this codebook file');
+const r=new BR(lib.d.subarray(lib.off[id],lib.off[id+1])),dim=r.read(4),ent=r.read(14);
+w.w(0x564342,24);w.w(dim,16);w.w(ent,24);const o=r.read(1);w.w(o,1);
+if(o){w.w(r.read(5),5);let c=0;while(c<ent){const b=ilog(ent-c),n=r.read(b);w.w(n,b);c+=n}}
+else{const l=r.read(3),sp=r.read(1);if(!l||l>5)throw Error('Bad codebook (wrong codebook file?)');w.w(sp,1);
+for(let i=0;i<ent;i++){let p=1;if(sp){p=r.read(1);w.w(p,1)}if(p)w.w(r.read(l),5)}}
+const lt=r.read(1);w.w(lt,4);
+if(lt){w.w(r.read(32),32);w.w(r.read(32),32);const vl=r.read(4);w.w(vl,4);w.w(r.read(1),1);const q=qv(ent,dim);for(let i=0;i<q;i++)w.w(r.read(vl+1),vl+1)}}
+function setup(W,I){const s=I.d+I.so,sz=W[s]|W[s+1]<<8,r=new BR(W.subarray(s+2,s+2+sz)),w=new BW(),cp=n=>{const v=r.read(n);w.w(v,n);return v};
+w.w(5,8);for(const c of'vorbis')w.w(c.charCodeAt(0),8);
+const nc=r.read(8)+1;w.w(nc-1,8);for(let i=0;i<nc;i++)cbk(r.read(10),w);
+w.w(0,6);w.w(0,16);
+const fc=r.read(6)+1;w.w(fc-1,6);
+for(let f=0;f<fc;f++){w.w(1,16);const np=cp(5),pl=[];let mx=0;for(let j=0;j<np;j++){const c=cp(4);pl.push(c);mx=Math.max(mx,c)}
+const cd=[];for(let j=0;j<=mx;j++){cd[j]=cp(3)+1;const sc=cp(2);if(sc)cp(8);for(let k=0;k<1<<sc;k++)cp(8)}
+cp(2);const rb=cp(4);for(let j=0;j<np;j++)for(let k=0;k<cd[pl[j]];k++)cp(rb)}
+const rc=r.read(6)+1;w.w(rc-1,6);
+for(let i=0;i<rc;i++){w.w(r.read(2),16);cp(24);cp(24);cp(24);const n=cp(6)+1;cp(8);const cs=[];
+for(let j=0;j<n;j++){const lo=cp(3);let hi=0;if(cp(1))hi=cp(5);cs.push(hi*8+lo)}
+for(let j=0;j<n;j++)for(let k=0;k<8;k++)if(cs[j]&1<<k)cp(8)}
+const mc=r.read(6)+1;w.w(mc-1,6);
+for(let i=0;i<mc;i++){w.w(0,16);let sm=1;if(cp(1))sm=cp(4)+1;if(cp(1)){const n=cp(8)+1,b=ilog(I.ch-1);for(let j=0;j<n;j++){cp(b);cp(b)}}
+cp(2);if(sm>1)for(let k=0;k<I.ch;k++)cp(4);for(let j=0;j<sm;j++){cp(8);cp(8);cp(8)}}
+const mo=r.read(6)+1;w.w(mo-1,6);const fl=[];
+for(let i=0;i<mo;i++){fl.push(cp(1));w.w(0,16);w.w(0,16);cp(8)}
+w.w(1,1);return{b:Uint8Array.from(w.done()),fl,bits:ilog(mo-1)}}
+const T=(()=>{const t=[];for(let i=0;i<256;i++){let r=i<<24;for(let j=0;j<8;j++)r=r&0x80000000?(r<<1)^0x04c11db7:r<<1;t[i]=r>>>0}return t})();
+function page(pk,g,q,f){const sg=[];let L=0;for(const p of pk){let n=p.length;while(n>=255){sg.push(255);n-=255}sg.push(n);L+=p.length}
+const b=new Uint8Array(27+sg.length+L),v=new DataView(b.buffer);b.set([79,103,103,83,0,f]);
+v.setUint32(6,g%4294967296,true);v.setUint32(10,Math.floor(g/4294967296),true);v.setUint32(14,1,true);v.setUint32(18,q,true);b[26]=sg.length;b.set(sg,27);
+let o=27+sg.length;for(const p of pk){b.set(p,o);o+=p.length}
+let c=0;for(let i=0;i<b.length;i++)c=((c<<8)^T[((c>>>24)&255)^b[i]])>>>0;v.setUint32(22,c,true);return b}
+function info(W){const v=new DataView(W.buffer,W.byteOffset,W.byteLength);let p=12,F,D,V;
+while(p+8<=W.length){const t=String.fromCharCode(...W.subarray(p,p+4)),s=v.getUint32(p+4,true);if(t=='fmt ')F=[p+8,s];else if(t=='data')D=[p+8,s];else if(t=='vorb')V=[p+8,s];p+=8+s+(s&1)}
+if(!F||!D||v.getUint16(F[0],true)!=0xFFFF)throw Error('Not Wwise Vorbis audio');
+const vo=V?V[0]:F[0]+0x18,vs=V?V[1]:F[1]-0x18;if(vs!=0x2A)throw Error('Unsupported header variant 0x'+vs.toString(16));
+const m=v.getUint32(vo+4,true);if([0x4A,0x4B,0x69,0x70].includes(m))throw Error('Unmodified packets not supported');
+return{ch:v.getUint16(F[0]+2,true),rate:v.getUint32(F[0]+4,true),avg:v.getUint32(F[0]+8,true),n:v.getUint32(vo,true),so:v.getUint32(vo+16,true),fa:v.getUint32(vo+20,true),b0:W[vo+0x28],b1:W[vo+0x29],d:D[0],e:Math.min(W.length,D[0]+D[1])}}
+function toOgg(W){if(!lib)throw Error('Load the codebook file first (step 1)');
+const I=info(W),S=setup(W,I),id=new Uint8Array(30),v=new DataView(id.buffer);
+id[0]=1;id.set([118,111,114,98,105,115],1);id[11]=I.ch;v.setUint32(12,I.rate,true);v.setUint32(20,I.avg*8,true);id[28]=I.b0|I.b1<<4;id[29]=1;
+const vend=[...'wem2js'].map(c=>c.charCodeAt(0)),cm=Uint8Array.from([3,118,111,114,98,105,115,vend.length,0,0,0,...vend,0,0,0,0,1]);
+const pk=[];for(let p=I.d+I.fa;p+2<=I.e;){const n=W[p]|W[p+1]<<8;pk.push(W.subarray(p+2,p+2+n));p+=2+n}
+const mk=(1<<S.bits)-1,out=[page([id],0,0,2),page([cm,S.b],0,1,0)];let pf=0,pb=0,g=0;
+pk.forEach((d,i)=>{const w=new BW(),m=d[0]&mk,bf=S.fl[m];w.w(0,1);w.w(m,S.bits);
+if(bf){const nx=pk[i+1];w.w(pf,1);w.w(nx&&nx.length?S.fl[nx[0]&mk]:0,1)}
+w.w(d[0]>>S.bits,8-S.bits);for(let j=1;j<d.length;j++)w.w(d[j],8);
+const bs=1<<(bf?I.b1:I.b0);if(pb)g+=pb/4+bs/4;pb=bs;pf=bf;
+const last=i==pk.length-1;out.push(page([Uint8Array.from(w.done())],last?Math.min(g,I.n):g,i+2,last?4:0))});
+let L=0;for(const o of out)L+=o.length;const r=new Uint8Array(L);let o=0;for(const x of out){r.set(x,o);o+=x.length}return r}
+let RAW=null,CL=[],NAME='';
+function parseBnk(u){const v=new DataView(u.buffer,u.byteOffset,u.byteLength);let p=0,D,X;
+while(p+8<=u.length){const t=String.fromCharCode(...u.subarray(p,p+4)),s=v.getUint32(p+4,true);if(t=='DIDX')X=[p+8,s];if(t=='DATA')D=p+8;p+=8+s}
+if(!X||D===undefined)throw Error('No embedded audio in this bank (it may only hold events)');
+const r=[];for(let i=0;i<X[1]/12;i++){const q=X[0]+i*12,id=v.getUint32(q,true),o=v.getUint32(q+4,true),s=v.getUint32(q+8,true);r.push({id,wem:u.subarray(D+o,D+o+s)})}return r}
+function wavParse(b){const v=new DataView(b.buffer,b.byteOffset,b.byteLength);if(TD.decode(b.subarray(0,4))!='RIFF')throw Error('Not a WAV or WEM file');
+let p=12,F,D;while(p+8<=b.length){const t=TD.decode(b.subarray(p,p+4)),s=v.getUint32(p+4,true);if(t=='fmt ')F=p+8;else if(t=='data')D=[p+8,Math.min(s,b.length-p-8)];p+=8+s+(s&1)}
+if(F===undefined||!D)throw Error('Broken WAV');return{tag:v.getUint16(F,true),ch:v.getUint16(F+2,true),rate:v.getUint32(F+4,true),bits:v.getUint16(F+14,true),d:b.subarray(D[0],D[0]+D[1])}}
+function pcmWem(w){const n=w.d.length,o=new Uint8Array(44+n),v=new DataView(o.buffer);o.set([82,73,70,70]);v.setUint32(4,36+n,true);o.set([87,65,86,69,102,109,116,32],8);
+v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,w.ch,true);v.setUint32(24,w.rate,true);v.setUint32(28,w.rate*w.ch*2,true);v.setUint16(32,w.ch*2,true);v.setUint16(34,16,true);
+o.set([100,97,116,97],36);v.setUint32(40,n,true);o.set(w.d,44);return o}
+function replace(c,b){const w=wavParse(b);
+if(w.tag==1){if(w.bits!=16)throw Error('WAV must be 16-bit PCM');c.wem=pcmWem(w);c.pcm=1;c.mem=w.d.length}
+else if(w.tag==0xFFFF){c.wem=b;c.pcm=0}else throw Error('Use a 16-bit PCM WAV or a Wwise .wem');
+c.rep=1;c.url=null}
+function exportBnk(){const u=RAW,v=new DataView(u.buffer,u.byteOffset,u.byteLength),rep=new Map(CL.filter(c=>c.pcm).map(c=>[c.id,c]));
+const dp=[],ix=new Uint8Array(CL.length*12),iv=new DataView(ix.buffer);let off=0;
+CL.forEach((c,i)=>{if(c.wem.length){const pad=(16-off%16)%16;if(pad){dp.push(new Uint8Array(pad));off+=pad}}
+iv.setUint32(i*12,c.id,true);iv.setUint32(i*12+4,off,true);iv.setUint32(i*12+8,c.wem.length,true);dp.push(c.wem);off+=c.wem.length});
+const dat=new Uint8Array(off);let o=0;for(const x of dp){dat.set(x,o);o+=x.length}
+const out=[];let p=0;
+while(p+8<=u.length){const t=String.fromCharCode(...u.subarray(p,p+4)),s=v.getUint32(p+4,true);let body=u.subarray(p+8,p+8+s);
+if(t=='DIDX')body=ix;else if(t=='DATA')body=dat;
+else if(t=='HIRC'&&rep.size){body=body.slice();const h=new DataView(body.buffer),n=h.getUint32(0,true);let q=4;
+for(let i=0;i<n;i++){const ty=body[q],sz=h.getUint32(q+1,true),b=q+5;if(ty==2){const c=rep.get(h.getUint32(b+9,true));if(c){h.setUint32(b+4,0x10001,true);h.setUint32(b+13,c.mem,true)}}q+=5+sz}}
+const hd=new Uint8Array(8);hd.set(u.subarray(p,p+4));new DataView(hd.buffer).setUint32(4,body.length,true);out.push(hd,body);p+=8+s}
+let L=0;for(const x of out)L+=x.length;const r=new Uint8Array(L);o=0;for(const x of out){r.set(x,o);o+=x.length}return r}
+const au=$('au'),rf=$('rf');let tgt=null;
+async function play(c){try{say('Converting…');if(!c.url)c.url=URL.createObjectURL(new Blob([c.pcm?c.wem:toOgg(c.wem)],{type:c.pcm?'audio/wav':'audio/ogg'}));au.src=c.url;await au.play();say('Playing '+c.id)}catch(e){say('Error: '+e.message)}}
+function render(){const L=$('list');L.innerHTML='';let n=0;
+for(const c of CL.filter(c=>c.wem.length)){let d='';try{if(c.pcm){const w=wavParse(c.wem);d=(w.d.length/(w.rate*w.ch*2)).toFixed(1)+' s'}else{const I=info(c.wem);d=(I.n/I.rate).toFixed(1)+' s'}}catch(x){}
+const r=document.createElement('div');r.className='row'+(c.rep?' rep':'');r.style.animationDelay=Math.min(n++,12)*30+'ms';
+const f=document.createElement('div');f.className='info';const b0=document.createElement('b');b0.textContent=c.id;const sm=document.createElement('small');sm.textContent=d+(c.rep?' \u00b7 replaced by '+c.rn:'');f.append(b0,sm);
+const g=document.createElement('div');g.className='acts';const mk=(t,fn,gh)=>{const x=document.createElement('button');x.textContent=t;if(gh)x.className='ghost';x.onclick=fn;g.appendChild(x)};
+mk('Play',()=>play(c));mk('Replace',()=>{tgt=c;rf.value='';rf.click()},1);
+mk('Save .wem',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c.wem]));a.download=c.id+'.wem';a.click()},1);
+mk('Edit',()=>addTrack(String(c.id),c.wem),1);r.append(f,g);L.appendChild(r)}}
+rf.onchange=async e=>{const f=e.target.files[0];if(!f||!tgt)return;try{replace(tgt,new Uint8Array(await f.arrayBuffer()));tgt.rn=f.name;say('Replaced '+tgt.id+'. Tap Export when done.');render()}catch(x){say('Error: '+x.message)}};
+$('bnk').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('list').innerHTML='';$('exp').innerHTML='';
+try{RAW=new Uint8Array(await f.arrayBuffer());NAME=f.name;CL=parseBnk(RAW);say(CL.filter(c=>c.wem.length).length+' clips found. Tap Play.');render();fillSel();
+const b=document.createElement('button');b.textContent='Export modified .bnk';b.onclick=()=>{try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([exportBnk()]));a.download=NAME;a.click()}catch(x){say('Error: '+x.message)}};$('exp').appendChild(b)}
+catch(x){say('Error: '+x.message)}};
+</script><script>
+const TD=new TextDecoder(),CN={1:'GameObject',4:'Transform',21:'Material',23:'MeshRenderer',28:'Texture2D',33:'MeshFilter',43:'Mesh',48:'Shader',49:'TextAsset',74:'AnimationClip',83:'AudioClip',91:'AnimatorController',95:'Animator',114:'MonoBehaviour',115:'MonoScript',137:'SkinnedMeshRenderer'};
+function lz4(s,n){const o=new Uint8Array(n);let i=0,j=0;while(i<s.length){const t=s[i++];let l=t>>4,b;if(l==15)do{b=s[i++];l+=b}while(b==255);
+for(let k=0;k<l;k++)o[j++]=s[i++];if(i>=s.length)break;const f=s[i]|s[i+1]<<8;i+=2;let m=t&15;if(m==15)do{b=s[i++];m+=b}while(b==255);m+=4;for(let k=0;k<m;k++,j++)o[j]=o[j-f]}return o}
+function lzma(src,n){const lc=src[0]%9,r0=(src[0]/9)|0,lp=r0%5,pb=(r0/5)|0,out=new Uint8Array(n),mk=k=>new Uint16Array(k).fill(1024);
+let ip=6,range=4294967295,code=0;for(let i=0;i<4;i++)code=(code*256+src[ip++])>>>0;
+const bit=(P,i)=>{if(range<16777216){range=(range*256)>>>0;code=(code*256+(src[ip++]||0))>>>0}const p=P[i],bd=((range>>>11)*p)>>>0;let b;
+if(code<bd){range=bd;P[i]=p+((2048-p)>>>5);b=0}else{range-=bd;code-=bd;P[i]=p-(p>>>5);b=1}return b};
+const tree=(P,o,nb)=>{let m=1;for(let i=0;i<nb;i++)m=(m<<1)+bit(P,o+m);return m-(1<<nb)};
+const rtree=(P,o,nb)=>{let m=1,s=0;for(let i=0;i<nb;i++){const b=bit(P,o+m);m=(m<<1)+b;s|=b<<i}return s};
+const direct=c=>{let v=0;while(c--){if(range<16777216){range=(range*256)>>>0;code=(code*256+(src[ip++]||0))>>>0}range=range>>>1;let t=0;if(code>=range){code-=range;t=1}v=v*2+t}return v};
+const LC=()=>({c:mk(2),lo:mk(128),mi:mk(128),hi:mk(256)}),len=(L,ps)=>!bit(L.c,0)?tree(L.lo,ps<<3,3):!bit(L.c,1)?8+tree(L.mi,ps<<3,3):16+tree(L.hi,0,8);
+const isM=mk(192),isR=mk(12),g0=mk(12),g1=mk(12),g2=mk(12),r0l=mk(192),slotP=mk(256),spP=mk(115),alP=mk(16),lit=mk(0x300<<(lc+lp)),lenC=LC(),repL=LC();
+let st=0,rep0=0,rep1=0,rep2=0,rep3=0,op=0;const pm=(1<<pb)-1,lm=(1<<lp)-1;
+while(op<n){const ps=op&pm;
+if(!bit(isM,(st<<4)+ps)){const prev=op?out[op-1]:0,lo=(((op&lm)<<lc)+(prev>>>(8-lc)))*0x300;let sym=1;
+if(st>=7){let mb=out[op-rep0-1];do{const mbit=(mb>>7)&1;mb<<=1;const b=bit(lit,lo+((1+mbit)<<8)+sym);sym=(sym<<1)|b;if(mbit!=b)break}while(sym<256)}
+while(sym<256)sym=(sym<<1)|bit(lit,lo+sym);out[op++]=sym&255;st=st<4?0:st<10?st-3:st-6}
+else{let l;
+if(bit(isR,st)){if(!bit(g0,st)){if(!bit(r0l,(st<<4)+ps)){st=st<7?9:11;out[op]=out[op-rep0-1];op++;continue}}
+else{let d;if(!bit(g1,st))d=rep1;else{if(!bit(g2,st))d=rep2;else{d=rep3;rep3=rep2}rep2=rep1}rep1=rep0;rep0=d}
+l=len(repL,ps);st=st<7?8:11}
+else{rep3=rep2;rep2=rep1;rep1=rep0;l=len(lenC,ps);st=st<7?7:10;const slot=tree(slotP,(l<4?l:3)<<6,6);
+if(slot<4)rep0=slot;else{const nd=(slot>>1)-1;let d=(2+(slot&1))*Math.pow(2,nd);
+if(slot<14)d+=rtree(spP,d-slot-1,nd);else{d+=direct(nd-4)*16;d+=rtree(alP,0,4)}rep0=d;if(rep0>=4294967295)break}}
+l+=2;if(rep0>=op)throw Error('LZMA data error');for(let i=0;i<l&&op<n;i++){out[op]=out[op-rep0-1];op++}}}
+return out}
+function ufs(u){const v=new DataView(u.buffer,u.byteOffset,u.byteLength);if(TD.decode(u.subarray(0,7))!='UnityFS')throw Error('Not a UnityFS bundle');
+let p=8;const ver=v.getUint32(p);p+=4;const cs=()=>{let e=p;while(u[e])e++;const s=TD.decode(u.subarray(p,e));p=e+1;return s};cs();cs();const hs=p;
+const csz=v.getUint32(p+8),usz=v.getUint32(p+12),fl=v.getUint32(p+16);p+=20;if(ver>=7)p=(p+15)&~15;
+let bi;if(fl&0x80)bi=u.subarray(u.length-csz);else{bi=u.subarray(p,p+csz);p+=csz}
+if((fl&63)==1)bi=lzma(bi,usz);else if(fl&63)bi=lz4(bi,usz);
+const b=new DataView(bi.buffer,bi.byteOffset,bi.byteLength);let q=16;const nb=b.getUint32(q);q+=4;const parts=[];let tot=0;
+for(let i=0;i<nb;i++){const us=b.getUint32(q),cz=b.getUint32(q+4),f=b.getUint16(q+8);q+=10;const c=u.subarray(p,p+cz);p+=cz;
+const d=(f&63)==1?lzma(c,us):f&63?lz4(c,us):c;parts.push(d);tot+=d.length}
+const all=new Uint8Array(tot);let o=0;for(const d of parts){all.set(d,o);o+=d.length}
+const n=b.getUint32(q);q+=4;const files={},order=[],flags={};
+for(let i=0;i<n;i++){const off=Number(b.getBigUint64(q)),sz=Number(b.getBigUint64(q+8));q+=20;let e=q;while(bi[e])e++;const k=TD.decode(bi.subarray(q,e));files[k]=all.subarray(off,off+sz);order.push(k);flags[k]=b.getUint32(q-4);q=e+1}
+return{files,order,flags,hs}}
+function ser(u){const v=new DataView(u.buffer,u.byteOffset,u.byteLength),ver=v.getUint32(8),doff=v.getUint32(12);
+if(u[16]!=0||ver<19||ver>21)throw Error('Unsupported asset file version '+ver);let p=20;while(u[p])p++;p+=1+4+1;
+const tt=u[p-1],nt=v.getUint32(p,true);p+=4;const types=[];
+for(let i=0;i<nt;i++){const c=v.getInt32(p,true);p+=7;if(c==114)p+=16;p+=16;if(tt){const nn=v.getUint32(p,true),sb=v.getUint32(p+4,true);p+=8+nn*32+sb;p+=4+v.getUint32(p,true)*4}types.push(c)}
+const n=v.getUint32(p,true);p+=4;const objs=[];
+for(let i=0;i<n;i++){p=(p+3)&~3;const bs=v.getUint32(p+8,true),sz=v.getUint32(p+12,true),ti=v.getInt32(p+16,true);p+=20;objs.push({c:types[ti],o:doff+bs,s:sz})}
+return{objs,v}}
+function tex(v,u,ob){let p=ob.o;const n=v.getUint32(p,true),name=TD.decode(u.subarray(p+4,p+4+n));p+=4+n;p=(p+3)&~3;p+=8;
+const pw=p,w=v.getInt32(p,true),h=v.getInt32(p+4,true),fmt=v.getInt32(p+12,true);p+=20+52;
+return{name,w,h,fmt,pw,ps:p,off:v.getUint32(p,true),size:v.getUint32(p+4,true)}}
+function draw(t,d){const cv=$('cv');cv.style.display='block';cv.width=t.w;cv.height=t.h;const gl=cv.getContext('webgl');if(!gl)throw Error('WebGL not available');
+const F=t.fmt;let ex,fm,raw=0;
+if(F>=48&&F<=59){ex=gl.getExtension('WEBGL_compressed_texture_astc');fm=[0x93B0,0x93B2,0x93B4,0x93B7,0x93BB,0x93BD][(F-48)%6]}
+else if(F==10||F==12){ex=gl.getExtension('WEBGL_compressed_texture_s3tc');fm=F==10?0x83F0:0x83F3}
+else if(F==34||F==45||F==46||F==47){ex=gl.getExtension('WEBGL_compressed_texture_etc');fm=F==47?0x9278:F==46?0x9276:0x9274}
+else if(F==4||F==3)raw=1;else throw Error('Texture format '+F+' not supported yet');
+if(!raw&&!ex)throw Error('This browser/GPU cannot show format '+F+' (phones usually can, desktops often cannot)');
+const sh=(ty,s)=>{const x=gl.createShader(ty);gl.shaderSource(x,s);gl.compileShader(x);return x},pr=gl.createProgram();
+gl.attachShader(pr,sh(gl.VERTEX_SHADER,'attribute vec2 a;varying vec2 u;void main(){u=vec2(a.x*.5+.5,a.y*.5+.5);gl_Position=vec4(a,0,1);}'));
+gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,'precision mediump float;varying vec2 u;uniform sampler2D s;void main(){gl_FragColor=vec4(texture2D(s,u).rgb,1.);}'));
+gl.linkProgram(pr);gl.useProgram(pr);const bf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const al=gl.getAttribLocation(pr,'a');gl.enableVertexAttribArray(al);gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+gl.bindTexture(gl.TEXTURE_2D,gl.createTexture());for(const k of[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+if(raw){gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);const g=F==4?gl.RGBA:gl.RGB;gl.texImage2D(gl.TEXTURE_2D,0,g,t.w,t.h,0,g,gl.UNSIGNED_BYTE,d)}
+else gl.compressedTexImage2D(gl.TEXTURE_2D,0,fm,t.w,t.h,0,d);
+gl.viewport(0,0,t.w,t.h);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}
+const FS={0:4,1:2,2:1,3:1,4:2,5:2,6:1,7:1,8:2,9:2,10:4,11:4};
+const h16=h=>{const e=h>>10&31,m=h&1023,sg=h&32768?-1:1;return e==0?sg*m*5.960464477539063e-8:e==31?(m?NaN:sg*Infinity):sg*Math.pow(2,e-15)*(1+m/1024)};
+function pk(v,u,p,isF){const n=v.getUint32(p,true);p+=4;let rg=0,st=0;if(isF){rg=v.getFloat32(p,true);st=v.getFloat32(p+4,true);p+=8}
+const dn=v.getUint32(p,true);p+=4;const d=u.subarray(p,p+dn);p+=dn;p=(p+3)&~3;const bs=u[p];p=(p+4)&~3;
+const o=isF?new Float32Array(n):new Uint32Array(n),mx=Math.pow(2,bs)-1;let bp=0,ip=0;
+for(let i=0;i<n&&bs;i++){let bits=0,val=0;while(bits<bs){const nb=Math.min(bs-bits,8-bp);val+=((d[ip]>>bp)&((1<<nb)-1))*Math.pow(2,bits);bp+=nb;bits+=nb;if(bp==8){ip++;bp=0}}o[i]=isF?val/mx*rg+st:val}
+return{o,p}}
+function cmesh(v,u,p){let r=pk(v,u,p,1);const pos=r.o,vc=pos.length/3;r=pk(v,u,r.p,1);const UD=r.o;r=pk(v,u,r.p,1);const NN=r.o;r=pk(v,u,r.p,1);r=pk(v,u,r.p,0);r=pk(v,u,r.p,0);const sg=r.o;r=pk(v,u,r.p,0);r=pk(v,u,r.p,1);r=pk(v,u,r.p,0);r=pk(v,u,r.p,0);const T=r.o,info=v.getUint32(r.p,true);
+const uv=new Float32Array(vc*2);const b0=info&15;if(b0&4){const dm=1+(b0&3);for(let i=0;i<vc;i++){uv[i*2]=UD[i*dm];uv[i*2+1]=dm>1?UD[i*dm+1]:0}}
+const idx=Math.max(...T)<65536?Uint16Array.from(T):Uint32Array.from(T),nrm=new Float32Array(vc*3);
+if(NN.length>=vc*2){for(let i=0;i<vc;i++){let x=NN[i*2],y=NN[i*2+1],z2=1-x*x-y*y,z=0;if(z2>=0)z=Math.sqrt(z2);else{const l=Math.hypot(x,y)||1;x/=l;y/=l}if(!sg[i])z=-z;nrm[i*3]=x;nrm[i*3+1]=y;nrm[i*3+2]=z}}
+else{for(let t=0;t+2<idx.length;t+=3){const a=idx[t],b=idx[t+1],c=idx[t+2],e1=[0,1,2].map(k=>pos[b*3+k]-pos[a*3+k]),e2=[0,1,2].map(k=>pos[c*3+k]-pos[a*3+k]),n=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];for(const q of[a,b,c])for(let k=0;k<3;k++)nrm[q*3+k]+=n[k]}
+for(let i=0;i<vc;i++){const l=Math.hypot(nrm[i*3],nrm[i*3+1],nrm[i*3+2])||1;for(let k=0;k<3;k++)nrm[i*3+k]/=l}}
+return{pos,nrm,uv,idx,vc}}
+function meshData(v,u,ob){let p=ob.o;const U32=()=>{const x=v.getUint32(p,true);p+=4;return x},al=()=>{p=(p+3)&~3};
+const n=U32();p+=n;al();const ns=U32();p+=ns*48;const nv=U32();p+=nv*40;const nsh=U32(),nch=U32();U32();if(nsh||nch)throw Error('Mesh has blend shapes (not supported)');
+const sk=m=>{const k=U32();p+=k*m};sk(64);sk(4);U32();sk(24);sk(4);const comp=u[p];p+=4;al();const ifmt=v.getInt32(p,true);p+=4;
+const il=U32(),ib=u.buffer.slice(u.byteOffset+p,u.byteOffset+p+il);p+=il;al();
+const vc=U32(),nc=U32(),ch=[];for(let i=0;i<nc;i++){ch.push([u[p],u[p+1],u[p+2],u[p+3]]);p+=4}const dl=U32(),base=p,st={};if(comp){p=base+dl;al();return cmesh(v,u,p)}
+for(const c of ch)if(c[3])st[c[0]]=Math.max(st[c[0]]||0,c[1]+FS[c[2]]*c[3]);
+const sb={};let acc=0;for(const k of Object.keys(st).map(Number).sort((a,b)=>a-b)){sb[k]=acc;acc+=(vc*st[k]+15)&~15}
+const rd=(i,k,d)=>{const c=ch[i],o=base+sb[c[0]]+k*st[c[0]]+c[1];return c[2]==0?v.getFloat32(o+d*4,true):c[2]==1?h16(v.getUint16(o+d*2,true)):NaN};
+const pos=new Float32Array(vc*3),nrm=new Float32Array(vc*3),uv=new Float32Array(vc*2);
+for(let i=0;i<vc;i++){for(let d=0;d<3;d++){pos[i*3+d]=rd(0,i,d);if(ch[1][3])nrm[i*3+d]=rd(1,i,d)}if(ch[4][3])for(let d=0;d<2;d++)uv[i*2+d]=rd(4,i,d)}
+return{pos,nrm,uv,idx:ifmt==0?new Uint16Array(ib):new Uint32Array(ib),vc}}
+function texGL(gl,t,d){const F=t.fmt;let ex,fm,raw=0;
+if(F>=48&&F<=59){ex=gl.getExtension('WEBGL_compressed_texture_astc');fm=[0x93B0,0x93B2,0x93B4,0x93B7,0x93BB,0x93BD][(F-48)%6]}
+else if(F==10||F==12){ex=gl.getExtension('WEBGL_compressed_texture_s3tc');fm=F==10?0x83F0:0x83F3}
+else if(F==34||F==45||F==46||F==47){ex=gl.getExtension('WEBGL_compressed_texture_etc');fm=F==47?0x9278:F==46?0x9276:0x9274}
+else if(F==4||F==3)raw=1;else return 0;if(!raw&&!ex)return 0;
+const x=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,x);for(const k of[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR);
+gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+if(raw){gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);const g=F==4?gl.RGBA:gl.RGB;gl.texImage2D(gl.TEXTURE_2D,0,g,t.w,t.h,0,g,gl.UNSIGNED_BYTE,d)}else gl.compressedTexImage2D(gl.TEXTURE_2D,0,fm,t.w,t.h,0,d);return x}
+const OR=[(x,y,z)=>[-x,z,-y],(x,y,z)=>[-x,y,z],(x,y,z)=>[-x,-z,y]];let V3=null;
+function show3D(){const meshes=U.objs.filter(o=>o.c==43).map(o=>meshData(U.v,U.a,o));if(!meshes.length)throw Error('No meshes in this bundle');
+const cv=$('c3');cv.style.display='block';const gl=cv.getContext('webgl');if(!gl)throw Error('WebGL not available');
+if(!V3){V3={all:0,ori:0,yaw:0.5,pit:0.1,dist:4.5};cv.width=cv.clientWidth*devicePixelRatio;cv.height=cv.clientHeight*devicePixelRatio;
+const P=new Map();cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY])};cv.onpointerup=cv.onpointercancel=e=>P.delete(e.pointerId);
+cv.onpointermove=e=>{if(!P.has(e.pointerId))return;const o=P.get(e.pointerId),nw=[e.clientX,e.clientY];
+if(P.size==1){V3.yaw+=(nw[0]-o[0])*0.01;V3.pit=Math.max(-1.5,Math.min(1.5,V3.pit+(nw[1]-o[1])*0.01))}
+else{const q=[...P].find(k=>k[0]!=e.pointerId)[1],d0=Math.hypot(o[0]-q[0],o[1]-q[1]),d1=Math.hypot(nw[0]-q[0],nw[1]-q[1]);V3.dist=Math.max(1.5,Math.min(15,V3.dist*d0/d1))}
+P.set(e.pointerId,nw);V3.draw()};cv.onwheel=e=>{e.preventDefault();V3.dist=Math.max(1.5,Math.min(15,V3.dist*(1+e.deltaY*0.001)));V3.draw()};cv.style.touchAction='none'}
+const f=OR[V3.ori];let mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
+const sel=V3.all?meshes:[meshes.reduce((a,b)=>b.vc>a.vc?b:a)];const mp=sel.map(m=>{const P=new Float32Array(m.pos.length),N=new Float32Array(m.pos.length);for(let i=0;i<m.vc;i++){const a=f(m.pos[i*3],m.pos[i*3+1],m.pos[i*3+2]),b=f(m.nrm[i*3],m.nrm[i*3+1],m.nrm[i*3+2]);for(let d=0;d<3;d++){P[i*3+d]=a[d];N[i*3+d]=b[d];mn[d]=Math.min(mn[d],a[d]);mx[d]=Math.max(mx[d],a[d])}}return{P,N,m}});
+const c=mn.map((x,i)=>(x+mx[i])/2),sc=2/Math.max(mx[0]-mn[0],mx[1]-mn[1],mx[2]-mn[2]);for(const k of mp)for(let i=0;i<k.P.length;i++)k.P[i]=(k.P[i]-c[i%3])*sc;
+const sh=(ty,s)=>{const x=gl.createShader(ty);gl.shaderSource(x,s);gl.compileShader(x);return x},pr=gl.createProgram();
+gl.attachShader(pr,sh(gl.VERTEX_SHADER,'attribute vec3 a;attribute vec3 n;attribute vec2 t;uniform vec2 r;uniform float d,k;varying vec3 vn;varying vec2 vt;void main(){float cy=cos(r.x),sy=sin(r.x),cx=cos(r.y),sx=sin(r.y);mat3 Ry=mat3(cy,0.,-sy,0.,1.,0.,sy,0.,cy);mat3 Rx=mat3(1.,0.,0.,0.,cx,sx,0.,-sx,cx);vec3 p=Rx*Ry*a;vn=Rx*Ry*n;vt=t;p.z-=d;gl_Position=vec4(p.x*2.4/k,p.y*2.4,-1.0020*p.z-0.2002,-p.z);}'));
+gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,'precision mediump float;varying vec3 vn;varying vec2 vt;uniform sampler2D s;uniform float h;void main(){vec3 c=h>.5?texture2D(s,vt).rgb:vec3(.7);float l=.4+.6*max(dot(normalize(vn),normalize(vec3(.3,.5,.8))),0.);gl_FragColor=vec4(c*l,1.);}'));
+gl.linkProgram(pr);gl.useProgram(pr);
+const tx=U.objs.filter(o=>o.c==28).map(o=>tex(U.v,U.a,o)),mt=tx.find(t=>/_d$/i.test(t.name))||tx[0];let hasT=0;
+if(mt)try{hasT=texGL(gl,mt,U.fs[U.res].subarray(mt.off,mt.off+mt.size))?1:0}catch(x){}
+const bufs=mp.map(k=>{const mk=(d,sz,loc)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,d,gl.STATIC_DRAW);return[b,sz,loc]},ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,k.m.idx,gl.STATIC_DRAW);
+return{b:[mk(k.P,3,gl.getAttribLocation(pr,'a')),mk(k.N,3,gl.getAttribLocation(pr,'n')),mk(k.m.uv,2,gl.getAttribLocation(pr,'t'))],ib,n:k.m.idx.length,ty:k.m.idx instanceof Uint16Array?gl.UNSIGNED_SHORT:gl.UNSIGNED_INT}});
+if(bufs.some(b=>b.ty==gl.UNSIGNED_INT))gl.getExtension('OES_element_index_uint');
+gl.enable(gl.DEPTH_TEST);const L=n=>gl.getUniformLocation(pr,n);
+V3.draw=()=>{gl.viewport(0,0,cv.width,cv.height);gl.clearColor(.1,.11,.13,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.uniform2f(L('r'),V3.yaw,V3.pit);gl.uniform1f(L('d'),V3.dist);gl.uniform1f(L('k'),cv.width/cv.height);gl.uniform1f(L('h'),hasT);gl.uniform1i(L('s'),0);
+for(const k of bufs){for(const[b,sz,loc]of k.b){gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,sz,gl.FLOAT,false,0,0)}gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,k.ib);gl.drawElements(gl.TRIANGLES,k.n,k.ty,0)}};
+V3.draw();say((V3.all?'All '+meshes.length+' parts':'Main body')+', '+sel.reduce((a,m)=>a+m.idx.length/3,0)+' triangles. Drag to rotate, pinch to zoom'+(hasT?'':' (no texture: GPU lacks this format)'))}
+let U=null;
+function rgbaTo(t,rgba){if(U.v.getUint32(t.ps-4,true))throw Error('Texture stores data inline (not supported yet)');
+const old=U.fs[U.res],pad=(16-old.length%16)%16,n=t.w*t.h*4,off=old.length+pad,nr=new Uint8Array(off+n);nr.set(old);
+for(let y=0;y<t.h;y++)nr.set(rgba.subarray(y*t.w*4,(y+1)*t.w*4),off+(t.h-1-y)*t.w*4);
+U.fs[U.res]=nr;const v=U.v;v.setInt32(t.pw+8,n,true);v.setInt32(t.pw+12,4,true);v.setInt32(t.pw+16,1,true);v.setUint32(t.ps,off,true);v.setUint32(t.ps+4,n,true)}
+async function imgRGBA(f,w,h){const bm=await createImageBitmap(f),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bm,0,0,w,h);return new Uint8Array(x.getImageData(0,0,w,h).data.buffer)}
+function expU(){const E=new TextEncoder();let tot=0,il=34;for(const k of U.order){tot+=U.fs[k].length;il+=21+E.encode(k).length}
+const info=new Uint8Array(il),iv=new DataView(info.buffer);let q=16;iv.setUint32(q,1);iv.setUint32(q+4,tot);iv.setUint32(q+8,tot);iv.setUint16(q+12,0);q+=14;iv.setUint32(q,U.order.length);q+=4;let o=0;
+for(const k of U.order){const n=U.fs[k].length;iv.setBigUint64(q,BigInt(o));iv.setBigUint64(q+8,BigInt(n));iv.setUint32(q+16,U.flags[k]);q+=20;const nb=E.encode(k);info.set(nb,q);q+=nb.length+1;o+=n}
+const hl=(U.hs+20+15)&~15,out=new Uint8Array(hl+il+tot),hv=new DataView(out.buffer);out.set(U.u.subarray(0,U.hs));
+hv.setBigUint64(U.hs,BigInt(out.length));hv.setUint32(U.hs+8,il);hv.setUint32(U.hs+12,il);hv.setUint32(U.hs+16,0x40);
+out.set(info,hl);o=hl+il;for(const k of U.order){out.set(U.fs[k],o);o+=U.fs[k].length}return out}
+const pf=$('pf');let ptgt=null;
+function renderTex(){const L=$('ul');L.innerHTML='';const bar=document.createElement('div');bar.className='bar';
+const mkb=(t,fn,gh)=>{const x=document.createElement('button');x.textContent=t;if(gh)x.className='ghost';x.onclick=()=>{try{fn()}catch(e){say('Error: '+e.message)}};bar.appendChild(x)};
+mkb('Export modified .unity3d',()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([expU()]));a.download=U.name;a.click()});
+mkb('View 3D model',()=>show3D(),1);mkb('Flip orientation',()=>{if(V3)V3.ori=(V3.ori+1)%3;show3D()},1);mkb('Show all parts',()=>{if(V3)V3.all=!V3.all;show3D()},1);L.appendChild(bar);
+let n=0;for(const o of U.objs.filter(o=>o.c==28)){const t=tex(U.v,U.a,o),r=document.createElement('div');r.className='row';r.style.animationDelay=Math.min(n++,12)*30+'ms';
+const f=document.createElement('div');f.className='info';const b0=document.createElement('b');b0.textContent=t.name;const sm=document.createElement('small');sm.textContent=t.w+'\u00d7'+t.h+' \u00b7 format '+t.fmt;f.append(b0,sm);
+const g=document.createElement('div');g.className='acts';const b=document.createElement('button'),q=document.createElement('button');b.textContent='View';q.textContent='Replace';q.className='ghost';
+b.onclick=()=>{try{const t2=tex(U.v,U.a,o);draw(t2,U.fs[U.res].subarray(t2.off,t2.off+t2.size));say(t2.name)}catch(x){say('Error: '+x.message)}};
+q.onclick=()=>{ptgt=o;pf.value='';pf.click()};g.append(b,q);r.append(f,g);L.appendChild(r)}}
+pf.onchange=async e=>{const f=e.target.files[0];if(!f||!ptgt)return;try{const t=tex(U.v,U.a,ptgt);rgbaTo(t,await imgRGBA(f,t.w,t.h));say('Replaced '+t.name+'. Tap Export when done.');renderTex();const t2=tex(U.v,U.a,ptgt);draw(t2,U.fs[U.res].subarray(t2.off,t2.off+t2.size))}catch(x){say('Error: '+x.message)}};
+$('ub').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('ul').innerHTML='';$('us').textContent='';
+try{const u=new Uint8Array(await f.arrayBuffer()),B=ufs(u),fs=B.files,nm=Object.keys(fs).find(k=>fs[k].length>20&&!/\.(resS|resource)$/.test(k)&&fs[k][16]==0&&fs[k][11]==21);
+if(!nm)throw Error('No asset file found in bundle');const res=Object.keys(fs).find(k=>/\.resS$/.test(k)),a=fs[nm],{objs,v}=ser(a);U={u,fs,order:B.order,flags:B.flags,hs:B.hs,objs,v,a,res,nm,name:f.name};
+const cnt={};objs.forEach(o=>cnt[CN[o.c]||'class '+o.c]=(cnt[CN[o.c]||'class '+o.c]||0)+1);
+$('us').textContent=objs.length+' objects: '+Object.entries(cnt).map(x=>x[1]+' '+x[0]).join(', ');renderTex()}
+catch(x){$('us').textContent='Error: '+x.message}};
+const AC=new(window.AudioContext||window.webkitAudioContext)({sampleRate:44100}),TR=[];let SRC=null;const SR=44100;
+async function addTrack(name,u8){try{say('Loading '+name+'…');let d=u8;try{if(wavParse(u8).tag==0xFFFF)d=toOgg(u8)}catch(e){if(/codebook/i.test(e.message))throw e}
+const buf=await AC.decodeAudioData(d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength)),m=new Float32Array(buf.length),n=buf.numberOfChannels;
+for(let c=0;c<n;c++){const x=buf.getChannelData(c);for(let i=0;i<m.length;i++)m[i]+=x[i]/n}
+TR.push({name,m,dur:m.length/SR,off:0,gain:1,tin:0,tout:m.length/SR});say('Added '+name);draw2()}catch(e){say('Error: '+e.message)}}
+$('af').onchange=async e=>{for(const f of e.target.files)await addTrack(f.name,new Uint8Array(await f.arrayBuffer()));e.target.value=''};
+function mix(){let L=0;for(const t of TR)L=Math.max(L,Math.round((t.off+Math.max(0,t.tout-t.tin))*SR));const o=new Float32Array(L);
+for(const t of TR){const s=Math.round(t.tin*SR),e=Math.min(t.m.length,Math.round(t.tout*SR)),st=Math.round(t.off*SR);for(let i=s;i<e;i++){const j=st+i-s;if(j>=0&&j<L)o[j]+=t.m[i]*t.gain}}
+let pk=0;for(let i=0;i<L;i++)pk=Math.max(pk,Math.abs(o[i]));if(pk>0.98){const k=0.98/pk;for(let i=0;i<L;i++)o[i]*=k}return o}
+function toWav(o){const d=new Uint8Array(o.length*2),v=new DataView(d.buffer);for(let i=0;i<o.length;i++)v.setInt16(i*2,Math.round(Math.max(-1,Math.min(1,o[i]))*32767),true);return pcmWem({d,ch:1,rate:SR})}
+function pks(m,n){const p=new Float32Array(n),sp=m.length/n;for(let x=0;x<n;x++){let a=0;const e=Math.min(m.length,Math.floor((x+1)*sp));for(let i=Math.floor(x*sp);i<e;i++)a=Math.max(a,Math.abs(m[i]));p[x]=a}return p}
+const acc=()=>getComputedStyle(document.documentElement).getPropertyValue('--ac').trim()||'#4f7cff';
+function draw2(){const L=$('tl');L.innerHTML='';TR.forEach((t,i)=>{if(!t.pk)t.pk=pks(t.m,240);
+const r=document.createElement('div');r.className='trk';r.innerHTML='<div class="th"><div><b></b><small></small></div><button class="ghost" aria-label="Remove clip">\u2715</button></div><canvas width="480" height="56"></canvas><div class="grid"></div>';
+r.querySelector('b').textContent=t.name;r.querySelector('small').textContent=t.dur.toFixed(2)+' s';r.querySelector('button').onclick=()=>{TR.splice(i,1);draw2()};
+const cv=r.querySelector('canvas'),g=r.querySelector('.grid');
+const paint=()=>{const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);c.fillStyle=acc();for(let x=0;x<w;x+=3){const p=t.pk[Math.floor(x/w*t.pk.length)],tm=x/w*t.dur;c.globalAlpha=tm>=t.tin&&tm<=t.tout?1:.2;const bh=Math.max(3,p*h*.95);c.fillRect(x,(h-bh)/2,2,bh)}c.globalAlpha=1};
+const fld=(lab,k,min,max,st,rng)=>{const f=document.createElement('label');f.className='f';const sp=document.createElement('span'),lb=document.createElement('b'),vl=document.createElement('em');lb.textContent=lab;lb.style.fontWeight=500;vl.style.fontStyle='normal';sp.append(lb,vl);
+const x=document.createElement('input');x.type=rng?'range':'number';x.min=min;x.max=max;x.step=st;x.value=rng?t[k]:+t[k].toFixed(3);if(!rng)x.inputMode='decimal';
+const up=()=>{if(rng)vl.textContent=Math.round(t[k]*100)+'%'};up();x.oninput=()=>{t[k]=Math.max(min,Math.min(max,parseFloat(x.value)||0));up();paint();cv2()};f.append(sp,x);g.appendChild(f)};
+fld('Start (s)','off',0,600,0.05);fld('Volume','gain',0,2,0.05,1);fld('Trim in (s)','tin',0,t.dur,0.05);fld('Trim out (s)','tout',0,t.dur,0.05);L.appendChild(r);paint()});cv2()}
+function cv2(){const c=$('wv'),g=c.getContext('2d'),o=mix(),w=c.width,h=c.height;g.clearRect(0,0,w,h);g.fillStyle=acc();const sp=Math.max(1,o.length/(w/3));
+for(let x=0;x<w;x+=3){let pk=0;const e=Math.min(o.length,Math.floor((x/3+1)*sp));for(let i=Math.floor(x/3*sp);i<e;i++)pk=Math.max(pk,Math.abs(o[i]));const bh=Math.max(2,pk*h*.95);g.fillRect(x,(h-bh)/2,2,bh)}
+$('as').textContent=TR.length?'Mix length '+(o.length/SR).toFixed(2)+' s':''}
+$('bj').onclick=()=>{let t0=0;for(const t of TR){t.off=+t0.toFixed(3);t0+=t.tout-t.tin}draw2()};
+$('bo').onclick=()=>{for(const t of TR)t.off=0;draw2()};
+let RAF=0;
+function stopP(){if(SRC){try{SRC.stop()}catch(e){}SRC=null}cancelAnimationFrame(RAF);$('ph').style.opacity=0;$('bp').innerHTML='&#9654; Play'}
+$('bp').onclick=async()=>{try{if(SRC){stopP();return}if(!TR.length)throw Error('Add a clip first');await AC.resume();const o=mix(),b=AC.createBuffer(1,o.length,SR);b.copyToChannel(o,0);
+const s=AC.createBufferSource();s.buffer=b;s.connect(AC.destination);SRC=s;const t0=AC.currentTime,d=o.length/SR,ph=$('ph');ph.style.opacity=1;ph.style.left='0%';$('bp').innerHTML='&#9632; Stop';
+s.onended=()=>{if(SRC===s)stopP()};s.start();const tick=()=>{if(SRC!==s)return;ph.style.left=Math.min(100,(AC.currentTime-t0)/d*100)+'%';RAF=requestAnimationFrame(tick)};tick()}catch(e){say('Error: '+e.message)}};
+$('bs').onclick=()=>{try{if(!TR.length)throw Error('Add a clip first');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([toWav(mix())],{type:'audio/wav'}));a.download='mix.wav';a.click()}catch(e){say('Error: '+e.message)}};
+function fillSel(){const s=$('tsel');s.innerHTML='';for(const c of CL.filter(c=>c.wem.length)){const o=document.createElement('option');o.value=c.id;o.textContent=c.id;s.appendChild(o)}}
+$('bb').onclick=()=>{try{if(!TR.length)throw Error('Add a clip first');const c=CL.find(x=>x.id==$('tsel').value);if(!c)throw Error('Open a .bnk in step 2 first');replace(c,toWav(mix()));c.rn='editor mix';render();say('Mix placed in clip '+c.id+'. Tap Export when done.')}catch(e){say('Error: '+e.message)}};
+</script>
+</body></html>
